@@ -1,7 +1,8 @@
 This project contains the relevant syntax definitions for the
 'java-front' parser originally developed for Stratego.
 
-The syntax definitions are from java-front 0.9.1.
+The syntax definitions are from java-front 0.9.1. The original
+code can be found in the 'original' branch in Git.
 
 You need the StrategoXT tool chain installed in order to compile
 the syntax definitions into a parse table. This is only necessary
