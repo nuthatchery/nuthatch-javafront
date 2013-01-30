@@ -1,3 +1,17 @@
+This project contains the relevant syntax definitions for the
+'java-front' parser originally developed for Stratego.
+
+The syntax definitions are from java-front 0.9.1.
+
+You need the StrategoXT tool chain installed in order to compile
+the syntax definitions into a parse table. This is only necessary
+if you actually change the definitions, since a compiled parse table
+is included here.
+
+For more information about Stratego, visit
+
+    http://www.strategoxt.org/
+
 --------------------------------------------------------------------------
 JavaFront
 --------------------------------------------------------------------------
@@ -25,3 +39,4 @@ Authors and contributors are listed in the AUTHORS file.
 
 Instructions are available online:
    * http://www.strategoxt.org/Stratego/JavaFront
+
