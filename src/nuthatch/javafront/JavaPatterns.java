@@ -1,7 +1,8 @@
 package nuthatch.javafront;
 
-import nuthatch.stratego.pattern.TermPatternFactory;
 import nuthatch.pattern.Pattern;
+import nuthatch.stratego.pattern.TermPatternFactory;
+
 import org.spoofax.interpreter.terms.IStrategoTerm;
 
 
@@ -268,12 +269,12 @@ public class JavaPatterns {
 		return pf.appl("Div", arg0, arg1);
 	}
 
-	public static Pattern<IStrategoTerm, Integer> DoWhile(Pattern<IStrategoTerm, Integer> arg0, Pattern<IStrategoTerm, Integer> arg1) {
-		return pf.appl("DoWhile", arg0, arg1);
-	}
-
 	public static Pattern<IStrategoTerm, Integer> Double() {
 		return pf.appl("Double");
+	}
+
+	public static Pattern<IStrategoTerm, Integer> DoWhile(Pattern<IStrategoTerm, Integer> arg0, Pattern<IStrategoTerm, Integer> arg1) {
+		return pf.appl("DoWhile", arg0, arg1);
 	}
 
 	public static Pattern<IStrategoTerm, Integer> ElemValArrayInit(Pattern<IStrategoTerm, Integer> arg0) {
@@ -800,16 +801,16 @@ public class JavaPatterns {
 		return pf.appl("TypeVar", arg0);
 	}
 
-	public static Pattern<IStrategoTerm, Integer> URightShift(Pattern<IStrategoTerm, Integer> arg0, Pattern<IStrategoTerm, Integer> arg1) {
-		return pf.appl("URightShift", arg0, arg1);
-	}
-
 	public static Pattern<IStrategoTerm, Integer> UnboundWld(Pattern<IStrategoTerm, Integer> arg0) {
 		return pf.appl("UnboundWld", arg0);
 	}
 
 	public static Pattern<IStrategoTerm, Integer> UnicodeEscape(Pattern<IStrategoTerm, Integer> arg0, Pattern<IStrategoTerm, Integer> arg1, Pattern<IStrategoTerm, Integer> arg2, Pattern<IStrategoTerm, Integer> arg3, Pattern<IStrategoTerm, Integer> arg4) {
 		return pf.appl("UnicodeEscape", arg0, arg1, arg2, arg3, arg4);
+	}
+
+	public static Pattern<IStrategoTerm, Integer> URightShift(Pattern<IStrategoTerm, Integer> arg0, Pattern<IStrategoTerm, Integer> arg1) {
+		return pf.appl("URightShift", arg0, arg1);
 	}
 
 	public static Pattern<IStrategoTerm, Integer> VarArityParam(Pattern<IStrategoTerm, Integer> arg0, Pattern<IStrategoTerm, Integer> arg1, Pattern<IStrategoTerm, Integer> arg2) {
