@@ -45,7 +45,7 @@ import org.spoofax.jsglr.shared.BadTokenException;
 import org.spoofax.jsglr.shared.SGLRException;
 import org.spoofax.jsglr.shared.TokenExpectedException;
 import org.spoofax.terms.ParseError;
-public class ExceptionAnalysis {
+public class CallAnalysis {
 
 	public static ParseTable getJavaParseTable() throws ParseError, IOException, InvalidParseTableException {
 		InputStream stream = JavaPatterns.class.getResourceAsStream("syntax/JavaCompilationUnit-15.tbl");
