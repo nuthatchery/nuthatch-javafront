@@ -25,8 +25,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import nuthatch.javafront.JavaPatterns;
-import nuthatch.library.strategies.Visitor;
-import nuthatch.library.strategies.VisitorAspect;
+import nuthatch.library.walks.DefaultVisitor;
+import nuthatch.library.walks.Visitor;
+import nuthatch.library.walks.VisitorAspect;
 import nuthatch.pattern.Environment;
 import nuthatch.pattern.EnvironmentFactory;
 import nuthatch.pattern.VarName;
@@ -34,8 +35,8 @@ import nuthatch.stratego.adapter.StrategoAdapter;
 import nuthatch.stratego.adapter.TermCursor;
 import nuthatch.stratego.adapter.TermEngine;
 import nuthatch.stratego.adapter.TermVar;
-import nuthatch.strategy.Strategy;
 import nuthatch.tree.TreeCursor;
+import nuthatch.walk.Step;
 
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.jsglr.client.InvalidParseTableException;
@@ -102,7 +103,7 @@ public class CallAnalysis {
 	private static MultiMap<String, String> ancestorVariant(IStrategoTerm term) {
 		final MultiMap<String, String> resultMap = new MultiMap<String, String>();
 
-		Strategy<TermEngine> calls = new Visitor<TermEngine>() {
+		Step<TermEngine> calls = new DefaultVisitor<TermEngine>() {
 			@Override
 			public void onEntry(TermEngine e) {
 				Environment<TreeCursor<IStrategoTerm, Integer>> env = EnvironmentFactory.env();
@@ -113,7 +114,7 @@ public class CallAnalysis {
 
 		};
 		TermEngine engine = new TermEngine(StrategoAdapter.termToTree(term), calls);
-		engine.engage();
+		engine.start();
 
 		return resultMap;
 	}
@@ -123,7 +124,7 @@ public class CallAnalysis {
 		final MultiMap<String, String> resultMap = new MultiMap<String, String>();
 		final VarName<TermCursor> scopeName = new VarName<>("scopeName");
 
-		Visitor<TermEngine> visitor = new Visitor<TermEngine>() {
+		Visitor<TermEngine> visitor = new DefaultVisitor<TermEngine>() {
 			@Override
 			public void onEntry(TermEngine e) {
 				Environment<TreeCursor<IStrategoTerm, Integer>> env = EnvironmentFactory.env();
@@ -133,7 +134,7 @@ public class CallAnalysis {
 			}
 		};
 
-		Strategy<TermEngine> nameTracker = new VisitorAspect<TermEngine>(visitor) {
+		Step<TermEngine> nameTracker = new VisitorAspect<TermEngine>(visitor) {
 
 			@Override
 			public void beforeEntry(TermEngine e) {
@@ -151,7 +152,7 @@ public class CallAnalysis {
 		};
 
 		TermEngine engine = new TermEngine(StrategoAdapter.termToTree(term), nameTracker);
-		engine.engage();
+		engine.start();
 		return resultMap;
 	}
 
