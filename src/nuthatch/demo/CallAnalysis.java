@@ -33,7 +33,7 @@ import nuthatch.pattern.EnvironmentFactory;
 import nuthatch.pattern.VarName;
 import nuthatch.stratego.adapter.StrategoAdapter;
 import nuthatch.stratego.adapter.TermCursor;
-import nuthatch.stratego.adapter.TermEngine;
+import nuthatch.stratego.adapter.TermWalk;
 import nuthatch.stratego.adapter.TermVar;
 import nuthatch.tree.TreeCursor;
 import nuthatch.walk.Step;
@@ -103,9 +103,9 @@ public class CallAnalysis {
 	private static MultiMap<String, String> ancestorVariant(IStrategoTerm term) {
 		final MultiMap<String, String> resultMap = new MultiMap<String, String>();
 
-		Step<TermEngine> calls = new DefaultVisitor<TermEngine>() {
+		Step<TermWalk> calls = new DefaultVisitor<TermWalk>() {
 			@Override
-			public void onEntry(TermEngine e) {
+			public void onEntry(TermWalk e) {
 				Environment<TreeCursor<IStrategoTerm, Integer>> env = EnvironmentFactory.env();
 				if(Invoke(Method(MethodName(var("name"))), var("args")).match(e, env)) {
 					resultMap.add(getSurroundingMethodName(e), nameToStr(env.get("name")));
@@ -113,7 +113,7 @@ public class CallAnalysis {
 			}
 
 		};
-		TermEngine engine = new TermEngine(StrategoAdapter.termToTree(term), calls);
+		TermWalk engine = new TermWalk(StrategoAdapter.termToTree(term), calls);
 		engine.start();
 
 		return resultMap;
@@ -124,9 +124,9 @@ public class CallAnalysis {
 		final MultiMap<String, String> resultMap = new MultiMap<String, String>();
 		final VarName<TermCursor> scopeName = new VarName<>("scopeName");
 
-		Visitor<TermEngine> visitor = new DefaultVisitor<TermEngine>() {
+		Visitor<TermWalk> visitor = new DefaultVisitor<TermWalk>() {
 			@Override
-			public void onEntry(TermEngine e) {
+			public void onEntry(TermWalk e) {
 				Environment<TreeCursor<IStrategoTerm, Integer>> env = EnvironmentFactory.env();
 				if(Invoke(Method(MethodName(var("name"))), var("args")).match(e, env)) {
 					resultMap.add(nameToStr(e.getSubtreeVar(scopeName)), nameToStr(env.get("name")));
@@ -134,10 +134,10 @@ public class CallAnalysis {
 			}
 		};
 
-		Step<TermEngine> nameTracker = new VisitorAspect<TermEngine>(visitor) {
+		Step<TermWalk> nameTracker = new VisitorAspect<TermWalk>(visitor) {
 
 			@Override
-			public void beforeEntry(TermEngine e) {
+			public void beforeEntry(TermWalk e) {
 				Environment<TreeCursor<IStrategoTerm, Integer>> env = EnvironmentFactory.env();
 				TermVar name = new TermVar(env);
 
@@ -151,13 +151,13 @@ public class CallAnalysis {
 
 		};
 
-		TermEngine engine = new TermEngine(StrategoAdapter.termToTree(term), nameTracker);
+		TermWalk engine = new TermWalk(StrategoAdapter.termToTree(term), nameTracker);
 		engine.start();
 		return resultMap;
 	}
 
 
-	private static String getSurroundingMethodName(TermEngine e) {
+	private static String getSurroundingMethodName(TermWalk e) {
 		Environment<TreeCursor<IStrategoTerm, Integer>> env = EnvironmentFactory.env();
 		if(ancestor(or(MethodDec(MethodDecHead(_, _, _, var("scopeName"), _, _), _), ConstrDec(ConstrDecHead(_, _, var("scopeName"), _, _), _))).match(e, env)) {
 			return nameToStr(env.get("scopeName"));
