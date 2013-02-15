@@ -27,6 +27,10 @@ To use, you also need:
 
 Documentation is available at the [Nuthatch website](http://nuthatchery.org/docs/).
 
+## Warning: Experimental Software!
+
+Nuthatch/J is currently highly experimental, and the API is changing all the time.
+
 ## Source code and bug reports
 
 The source code is hosted on [GitHub](https://github.com/nuthatchery/nuthatch-javafront).
