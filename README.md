@@ -1,4 +1,4 @@
-## Nuthatch/J+Stratego
+## Nuthatch/J+JavaFront
 
 This project contains the relevant syntax definitions for the
 [JavaFront](http://strategoxt.org/Stratego/JavaFront) parser originally
