@@ -23,9 +23,9 @@ import static nuthatch.stratego.pattern.StaticTermPatternFactory.string;
 import static nuthatch.stratego.pattern.StaticTermPatternFactory.var;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import nuthatch.javafront.JavaAdapter;
 import nuthatch.javafront.JavaParser;
@@ -35,7 +35,6 @@ import nuthatch.pattern.Environment;
 import nuthatch.pattern.EnvironmentFactory;
 import nuthatch.stratego.adapter.TermCursor;
 import nuthatch.stratego.adapter.TermWalk;
-import nuthatch.util.Pair;
 import nuthatch.walk.Step;
 
 import org.spoofax.jsglr.client.InvalidParseTableException;
@@ -46,31 +45,26 @@ import org.spoofax.jsglr.shared.SGLRException;
  * 
  */
 public class Class2Table {
+	static class ColumnType {
+		String typeName;
+		String foreignKey;
+
+
+		ColumnType(String typeName, String foreignKey) {
+			this.typeName = typeName;
+			this.foreignKey = foreignKey;
+		}
+	}
+
+
 	public static void main(String[] args) throws SGLRException, IOException, InvalidParseTableException {
 		JavaParser.init();
 		TermCursor term = JavaParser.parseStream(Class2Table.class.getResourceAsStream("examples/Example.java.ex"), "Example.java");
 
-		Class2Table class2Table = new Class2Table(term);
-		Collection<Table> tables = class2Table.transform();
+		Collection<Table> tables = transform(term);
 		for(Table t : tables) {
 			System.out.println(t.toSQL());
 		}
-	}
-
-	private Map<TermCursor, Table> tables;
-
-	private TermCursor javaTree;
-
-
-	/**
-	 * The tree should be a Java package (or list of packages) containing all
-	 * the classes to be converted.
-	 * 
-	 * @param javaTree
-	 *            The Java tree we wish to transform
-	 */
-	public Class2Table(TermCursor javaTree) {
-		this.javaTree = javaTree;
 	}
 
 
@@ -79,17 +73,17 @@ public class Class2Table {
 	 * 
 	 * @return A collection of tables
 	 */
-	public Collection<Table> transform() {
-		tables = new HashMap<TermCursor, Table>();
+	public static Collection<Table> transform(TermCursor javaTree) {
+		final List<Table> tables = new ArrayList<Table>();
 
 		// we'll walk the entire tree, calling transformClassDec on every node
 		// if we get a non-null result, we've hit a class declaration and obtained a table
 		Visitor<TermWalk> visitor = new DefaultVisitor<TermWalk>() {
 			@Override
 			public void onEntry(TermWalk w) {
-				Pair<TermCursor, Table> p = transformClassDec(w);
-				if(p != null) {
-					tables.put(p.getFirst(), p.getSecond());
+				Table t = transformClassDec(w);
+				if(t != null) {
+					tables.add(t);
 				}
 			}
 		};
@@ -102,7 +96,7 @@ public class Class2Table {
 		TermWalk walk = new TermWalk(javaTree, trackScopeName);
 		walk.start();
 
-		return tables.values();
+		return tables;
 	}
 
 
@@ -112,10 +106,10 @@ public class Class2Table {
 	 * 
 	 * @param w
 	 *            The current walk
-	 * @return A pair of <name, table>, with the name given in Java abstract
-	 *         syntax
+	 * @return A table corresponding to the class at the current node, or null
+	 *         if current node is not a class
 	 */
-	private Pair<TermCursor, Table> transformClassDec(TermWalk w) {
+	private static Table transformClassDec(TermWalk w) {
 		Environment<TermCursor> env = EnvironmentFactory.env();
 		if(w.match(ClassDec(ClassDecHead(var("modifiers"), var("name"), _, var("extends"), var("implements")), ClassBody(var("body"))), env)) {
 			String tableName = JavaAdapter.nameToStr(env.get("name")); // get the name as a string
@@ -140,7 +134,7 @@ public class Class2Table {
 				}
 			};
 			w.walkSubtree(step);
-			return new Pair<>(env.get("name"), table);
+			return table;
 		}
 		else {
 			return null;
@@ -155,14 +149,14 @@ public class Class2Table {
 	 *            Current walk
 	 * @return A column, or null if the current node is not a field declaration
 	 */
-	private Column transformField(TermWalk w) {
+	private static Column transformField(TermWalk w) {
 		Environment<TermCursor> env = EnvironmentFactory.env();
 		if(w.match(or(FieldDec(_, var("type"), list(VarDec(var("name")))), FieldDec(_, var("type"), list(VarDec(var("name"), _)))), env)) {
 			// Obtain the type name. Second element of the pair will be the foreign key if this field is
 			// a reference to another object.
-			Pair<String, String> typeName = transformTypeName(env.get("type"));
+			ColumnType type = transformTypeName(env.get("type"));
 			String fieldName = JavaAdapter.nameToStr(env.get("name"));
-			return new Column(fieldName, typeName.getFirst(), typeName.getSecond());
+			return new Column(fieldName, type.typeName, type.foreignKey);
 		}
 		else {
 			return null;
@@ -170,7 +164,7 @@ public class Class2Table {
 	}
 
 
-	private Pair<String, String> transformTypeName(TermCursor c) {
+	private static ColumnType transformTypeName(TermCursor c) {
 		Environment<TermCursor> env = EnvironmentFactory.env();
 		String type = null;
 		String foreignKey = null;
@@ -208,6 +202,6 @@ public class Class2Table {
 		}
 
 		// whoops!
-		return new Pair<>(type, foreignKey);
+		return new ColumnType(type, foreignKey);
 	}
 }
