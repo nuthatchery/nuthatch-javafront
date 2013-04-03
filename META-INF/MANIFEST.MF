@@ -3,9 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Nuthatch/J+JavaFront
 Bundle-SymbolicName: nuthatch_javafront
 Bundle-Version: 0.99.0
-Require-Bundle: org.spoofax.jsglr;bundle-version="0.3.0",
- org.spoofax.terms;bundle-version="1.0.0",
- nuthatch;bundle-version="0.99.0",
- nuthatch_stratego;bundle-version="0.99.0"
+Require-Bundle: nuthatch;bundle-version="0.99.0",
+ nuthatch_stratego;bundle-version="0.99.0",
+ org.spoofax.jsglr;bundle-version="0.3.0",
+ org.spoofax.terms;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Vendor: The Nuthatchery / Anya Helene Bagge
