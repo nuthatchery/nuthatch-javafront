@@ -1,4 +1,4 @@
-package nuthatch.demo.class2table;
+package nuthatch.demo.javafront.class2table;
 
 import static nuthatch.javafront.JavaPatterns.Boolean;
 import static nuthatch.javafront.JavaPatterns.Byte;
@@ -17,6 +17,10 @@ import static nuthatch.javafront.JavaPatterns.None;
 import static nuthatch.javafront.JavaPatterns.TypeName;
 import static nuthatch.javafront.JavaPatterns.VarDec;
 import static nuthatch.pattern.StaticPatternFactory.or;
+import static nuthatch.stratego.actions.SActionFactory.down;
+import static nuthatch.stratego.actions.SActionFactory.match;
+import static nuthatch.stratego.actions.SActionFactory.matchBuilder;
+import static nuthatch.stratego.actions.SActionFactory.walk;
 import static nuthatch.stratego.pattern.StaticTermPatternFactory._;
 import static nuthatch.stratego.pattern.StaticTermPatternFactory.list;
 import static nuthatch.stratego.pattern.StaticTermPatternFactory.string;
@@ -29,16 +33,15 @@ import java.util.List;
 
 import nuthatch.javafront.JavaAdapter;
 import nuthatch.javafront.JavaParser;
-import nuthatch.library.walks.Action;
+import nuthatch.library.Action;
+import nuthatch.library.Walk;
+import nuthatch.library.impl.actions.MatchBuilder;
 import nuthatch.pattern.Environment;
 import nuthatch.pattern.EnvironmentFactory;
 import nuthatch.pattern.Pattern;
-import nuthatch.stratego.actions.ActionFactory;
-import nuthatch.stratego.actions.ActionFactory.MatchSwitchBuilder;
-import nuthatch.stratego.actions.MatchedTermAction;
+import nuthatch.stratego.actions.SMatchAction;
 import nuthatch.stratego.adapter.TermCursor;
 import nuthatch.stratego.adapter.TermWalk;
-import nuthatch.walk.Step;
 
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.jsglr.client.InvalidParseTableException;
@@ -51,7 +54,7 @@ import org.spoofax.jsglr.shared.SGLRException;
 public class Class2Table {
 	public static void main(String[] args) throws SGLRException, IOException, InvalidParseTableException {
 		JavaParser.init();
-		TermCursor term = JavaParser.parseStream(Class2Table.class.getResourceAsStream("examples/Example.java.ex"), "Example.java");
+		TermCursor term = JavaParser.parseStream(Class2Table.class.getResourceAsStream("../examples/Example.java.ex"), "Example.java");
 
 		Collection<Table> tables = transform(term);
 		for(Table t : tables) {
@@ -70,7 +73,7 @@ public class Class2Table {
 		final List<Table> tables = new ArrayList<Table>();
 
 		// we'll do a default walk of the entire tree, doing classDecAction on every step 
-		Step<TermWalk> step = ActionFactory.defaultStep(classDecAction(tables));
+		Walk<TermWalk> step = walk(classDecAction(tables));
 		TermWalk walk = new TermWalk(javaTree, step);
 		walk.start();
 
@@ -94,20 +97,20 @@ public class Class2Table {
 		// we construct an action which will be executed
 		//  - if we're on the way down (ifDown)
 		//  - if the current node matches the pattern (ifMatches)
-		Action<TermWalk> action = ActionFactory.ifDown(ActionFactory.ifMatches(classDecPat, new MatchedTermAction() {
+		return down(match(classDecPat, new SMatchAction() {
 			@Override
-			public int action(TermWalk walk, Environment<TermCursor> env) {
+			public int step(TermWalk walk, Environment<TermCursor> env) {
 				String tableName = JavaAdapter.nameToStr(env.get("name")); // get the name as a string
 				final Table table = new Table(tableName);
 
 				// this subwalk will visit all the field declarations in this class declaration
-				walk.walkSubtree(ActionFactory.defaultStep(fieldDecAction(table)));
+				walk.walkSubtree(walk(fieldDecAction(table)));
 
 				tables.add(table);
 				return PROCEED;
 			}
+
 		}));
-		return action;
 	}
 
 
@@ -121,7 +124,7 @@ public class Class2Table {
 	 */
 	private static Action<TermWalk> fieldDecAction(final Table table) {
 		// we use this builder to build up what is basically a pattern-match switch statement
-		MatchSwitchBuilder builder = ActionFactory.matchSwitchBuilder();
+		MatchBuilder<IStrategoTerm, Integer, TermCursor, TermWalk> builder = matchBuilder();
 
 		// the pattern for field declarations, with and without initialisers
 		// Note: declaring multiple fields in the same declaration is allowed in Java,
@@ -131,11 +134,11 @@ public class Class2Table {
 		Pattern<IStrategoTerm, Integer> fieldDecPat = or(fieldDecNoInit, fieldDecWithInit);
 
 		// if fieldDecPat matches, we'll do this action
-		builder.add(fieldDecPat, new MatchedTermAction() {
+		builder.add(fieldDecPat, new SMatchAction() {
 			// walk refers to the current walk, with context information on the current node
 			// env will contain the variables we matched in the pattern
 			@Override
-			public int action(TermWalk walk, Environment<TermCursor> env) {
+			public int step(TermWalk walk, Environment<TermCursor> env) {
 				// Obtain the type name. Second element of the pair will be the foreign key if this field is
 				// a reference to another object.
 				ColumnType type = transformTypeName(env.get("type"));
@@ -146,15 +149,15 @@ public class Class2Table {
 		});
 
 		// if we hit a class declaration, we should stop, so we don't get the fields of inner classes
-		builder.add(ClassDec(_, _), new MatchedTermAction() {
+		builder.add(ClassDec(_, _), new SMatchAction() {
 			@Override
-			public int action(TermWalk walk, Environment<TermCursor> env) {
-				return Step.PARENT;
+			public int step(TermWalk walk, Environment<TermCursor> env) {
+				return Walk.PARENT;
 			}
 		});
 
 		// we'll do the action only on the way down the tree
-		return ActionFactory.ifDown(builder.done());
+		return down(builder.done());
 	}
 
 

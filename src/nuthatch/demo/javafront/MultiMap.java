@@ -1,4 +1,4 @@
-package nuthatch.demo;
+package nuthatch.demo.javafront;
 
 import java.util.ArrayList;
 import java.util.HashMap;

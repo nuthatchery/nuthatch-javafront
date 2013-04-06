@@ -1,4 +1,4 @@
-package nuthatch.demo.class2table;
+package nuthatch.demo.javafront.class2table;
 
 public class Column {
 	private String name;
