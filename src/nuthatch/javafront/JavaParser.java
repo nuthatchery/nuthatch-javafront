@@ -3,8 +3,8 @@ package nuthatch.javafront;
 import java.io.IOException;
 import java.io.InputStream;
 
+import nuthatch.stratego.adapter.STermCursor;
 import nuthatch.stratego.adapter.StrategoAdapter;
-import nuthatch.stratego.adapter.TermCursor;
 
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.jsglr.client.InvalidParseTableException;
@@ -52,19 +52,19 @@ public class JavaParser {
 	 * @throws SGLRException
 	 * @throws IOException
 	 */
-	public static TermCursor parseFile(String fileName) throws SGLRException, IOException {
+	public static STermCursor parseFile(String fileName) throws SGLRException, IOException {
 		IStrategoTerm term = StrategoAdapter.parseFile(fileName, getJavaParseTable());
 		return StrategoAdapter.termToTree(term);
 	}
 
 
-	public static TermCursor parseStream(InputStream input, String fileName) throws SGLRException, IOException {
+	public static STermCursor parseStream(InputStream input, String fileName) throws SGLRException, IOException {
 		IStrategoTerm term = StrategoAdapter.parseStream(input, fileName, null, getJavaParseTable());
 		return StrategoAdapter.termToTree(term);
 	}
 
 
-	public static TermCursor parseString(String input, String fileName) throws SGLRException {
+	public static STermCursor parseString(String input, String fileName) throws SGLRException {
 		IStrategoTerm term = StrategoAdapter.parseString(input, fileName, getJavaParseTable());
 		return StrategoAdapter.termToTree(term);
 	}

@@ -10,42 +10,42 @@ import static nuthatch.javafront.JavaPatterns.Some;
 import static nuthatch.pattern.StaticPatternFactory.and;
 import static nuthatch.pattern.StaticPatternFactory.parent;
 import static nuthatch.pattern.StaticPatternFactory.var;
-import static nuthatch.stratego.pattern.StaticTermPatternFactory._;
-import static nuthatch.stratego.pattern.StaticTermPatternFactory.isList;
-import static nuthatch.stratego.pattern.StaticTermPatternFactory.var;
+import static nuthatch.stratego.pattern.SPatternFactory._;
+import static nuthatch.stratego.pattern.SPatternFactory.isList;
+import static nuthatch.stratego.pattern.SPatternFactory.var;
+import nuthatch.library.BaseComposedAction;
 import nuthatch.library.JoinPoints;
 import nuthatch.library.Walk;
-import nuthatch.library.impl.actions.AbstractComposeAction;
 import nuthatch.pattern.Environment;
 import nuthatch.pattern.EnvironmentFactory;
 import nuthatch.pattern.VarName;
-import nuthatch.stratego.adapter.TermAdapter;
-import nuthatch.stratego.adapter.TermCursor;
-import nuthatch.stratego.adapter.TermWalk;
+import nuthatch.stratego.adapter.STermAdapter;
+import nuthatch.stratego.adapter.STermCursor;
+import nuthatch.stratego.adapter.SWalker;
 
-public class TrackScopeName extends AbstractComposeAction<TermWalk> {
-	private static final VarName<TermCursor> scopeName = new VarName<>("scopeName");
+public class TrackScopeName extends BaseComposedAction<SWalker> {
+	private static final VarName<STermCursor> scopeName = new VarName<>("scopeName");
 
 
-	public TrackScopeName(Walk<TermWalk> s) {
+	public TrackScopeName(Walk<SWalker> s) {
 		super(s);
 	}
 
 
 	@Override
-	public int step(TermWalk w) {
+	public int step(SWalker w) {
 		if(JoinPoints.down(w)) {
-			Environment<TermCursor> env = EnvironmentFactory.env();
+			Environment<STermCursor> env = EnvironmentFactory.env();
 			if(w.match(CompilationUnit(Some(PackageDec(_, PackageName(var("pkgName", isList())))), _, _), env)) {
 				w.setSubtreeVar(scopeName, env.get("pkgName"));
 			}
 			else if(w.match(and(ClassBody(_), parent(ClassDec(ClassDecHead(_, var("name"), _, _, _), _))), env)) {
-				TermCursor n = w.getSubtreeVar(scopeName);
+				STermCursor n = w.getSubtreeVar(scopeName);
 				if(n == null) {
 					w.setSubtreeVar(scopeName, env.get("name"));
 				}
 				else {
-					w.setSubtreeVar(scopeName, TermAdapter.append(env.get("name"), n));
+					w.setSubtreeVar(scopeName, STermAdapter.append(env.get("name"), n));
 				}
 			}
 		}
@@ -53,7 +53,7 @@ public class TrackScopeName extends AbstractComposeAction<TermWalk> {
 	}
 
 
-	public static TermCursor getScopeName(TermWalk w) {
+	public static STermCursor getScopeName(SWalker w) {
 		return w.getSubtreeVar(scopeName);
 	}
 }

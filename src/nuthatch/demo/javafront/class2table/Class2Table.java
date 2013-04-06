@@ -21,10 +21,10 @@ import static nuthatch.stratego.actions.SActionFactory.down;
 import static nuthatch.stratego.actions.SActionFactory.match;
 import static nuthatch.stratego.actions.SActionFactory.matchBuilder;
 import static nuthatch.stratego.actions.SActionFactory.walk;
-import static nuthatch.stratego.pattern.StaticTermPatternFactory._;
-import static nuthatch.stratego.pattern.StaticTermPatternFactory.list;
-import static nuthatch.stratego.pattern.StaticTermPatternFactory.string;
-import static nuthatch.stratego.pattern.StaticTermPatternFactory.var;
+import static nuthatch.stratego.pattern.SPatternFactory._;
+import static nuthatch.stratego.pattern.SPatternFactory.list;
+import static nuthatch.stratego.pattern.SPatternFactory.string;
+import static nuthatch.stratego.pattern.SPatternFactory.var;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,14 +34,14 @@ import java.util.List;
 import nuthatch.javafront.JavaAdapter;
 import nuthatch.javafront.JavaParser;
 import nuthatch.library.Action;
+import nuthatch.library.MatchBuilder;
 import nuthatch.library.Walk;
-import nuthatch.library.impl.actions.MatchBuilder;
 import nuthatch.pattern.Environment;
 import nuthatch.pattern.EnvironmentFactory;
 import nuthatch.pattern.Pattern;
 import nuthatch.stratego.actions.SMatchAction;
-import nuthatch.stratego.adapter.TermCursor;
-import nuthatch.stratego.adapter.TermWalk;
+import nuthatch.stratego.adapter.STermCursor;
+import nuthatch.stratego.adapter.SWalker;
 
 import org.spoofax.interpreter.terms.IStrategoTerm;
 import org.spoofax.jsglr.client.InvalidParseTableException;
@@ -54,7 +54,7 @@ import org.spoofax.jsglr.shared.SGLRException;
 public class Class2Table {
 	public static void main(String[] args) throws SGLRException, IOException, InvalidParseTableException {
 		JavaParser.init();
-		TermCursor term = JavaParser.parseStream(Class2Table.class.getResourceAsStream("../examples/Example.java.ex"), "Example.java");
+		STermCursor term = JavaParser.parseStream(Class2Table.class.getResourceAsStream("../examples/Example.java.ex"), "Example.java");
 
 		Collection<Table> tables = transform(term);
 		for(Table t : tables) {
@@ -68,13 +68,13 @@ public class Class2Table {
 	 * 
 	 * @return A collection of tables
 	 */
-	public static Collection<Table> transform(TermCursor javaTree) {
+	public static Collection<Table> transform(STermCursor javaTree) {
 		// we'll accumulate the result here
 		final List<Table> tables = new ArrayList<Table>();
 
-		// we'll do a default walk of the entire tree, doing classDecAction on every step 
-		Walk<TermWalk> step = walk(classDecAction(tables));
-		TermWalk walk = new TermWalk(javaTree, step);
+		// we'll do a default walk of the entire tree, doing classDecAction on every step
+		Walk<SWalker> step = walk(classDecAction(tables));
+		SWalker walk = new SWalker(javaTree, step);
 		walk.start();
 
 		return tables;
@@ -90,7 +90,7 @@ public class Class2Table {
 	 *            is performed
 	 * @return an action
 	 */
-	private static Action<TermWalk> classDecAction(final List<Table> tables) {
+	private static Action<SWalker> classDecAction(final List<Table> tables) {
 		// The pattern for class declarations
 		Pattern<IStrategoTerm, Integer> classDecPat = ClassDec(ClassDecHead(var("modifiers"), var("name"), _, var("extends"), var("implements")), ClassBody(var("body")));
 
@@ -99,7 +99,7 @@ public class Class2Table {
 		//  - if the current node matches the pattern (ifMatches)
 		return down(match(classDecPat, new SMatchAction() {
 			@Override
-			public int step(TermWalk walk, Environment<TermCursor> env) {
+			public int step(SWalker walk, Environment<STermCursor> env) {
 				String tableName = JavaAdapter.nameToStr(env.get("name")); // get the name as a string
 				final Table table = new Table(tableName);
 
@@ -122,9 +122,9 @@ public class Class2Table {
 	 *            The Table the columns should be added to
 	 * @return an action
 	 */
-	private static Action<TermWalk> fieldDecAction(final Table table) {
+	private static Action<SWalker> fieldDecAction(final Table table) {
 		// we use this builder to build up what is basically a pattern-match switch statement
-		MatchBuilder<IStrategoTerm, Integer, TermCursor, TermWalk> builder = matchBuilder();
+		MatchBuilder<IStrategoTerm, Integer, STermCursor, SWalker> builder = matchBuilder();
 
 		// the pattern for field declarations, with and without initialisers
 		// Note: declaring multiple fields in the same declaration is allowed in Java,
@@ -138,7 +138,7 @@ public class Class2Table {
 			// walk refers to the current walk, with context information on the current node
 			// env will contain the variables we matched in the pattern
 			@Override
-			public int step(TermWalk walk, Environment<TermCursor> env) {
+			public int step(SWalker walk, Environment<STermCursor> env) {
 				// Obtain the type name. Second element of the pair will be the foreign key if this field is
 				// a reference to another object.
 				ColumnType type = transformTypeName(env.get("type"));
@@ -151,8 +151,8 @@ public class Class2Table {
 		// if we hit a class declaration, we should stop, so we don't get the fields of inner classes
 		builder.add(ClassDec(_, _), new SMatchAction() {
 			@Override
-			public int step(TermWalk walk, Environment<TermCursor> env) {
-				return Walk.PARENT;
+			public int step(SWalker walk, Environment<STermCursor> env) {
+				return Action.PARENT;
 			}
 		});
 
@@ -161,8 +161,8 @@ public class Class2Table {
 	}
 
 
-	private static ColumnType transformTypeName(TermCursor c) {
-		Environment<TermCursor> env = EnvironmentFactory.env();
+	private static ColumnType transformTypeName(STermCursor c) {
+		Environment<STermCursor> env = EnvironmentFactory.env();
 		String type = null;
 		String foreignKey = null;
 

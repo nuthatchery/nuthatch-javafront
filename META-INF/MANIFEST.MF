@@ -9,3 +9,7 @@ Require-Bundle: nuthatch;bundle-version="0.99.0",
  org.spoofax.terms;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Vendor: The Nuthatchery / Anya Helene Bagge
+Export-Package: 
+ nuthatch.javafront,
+ nuthatch.javafron.syntax
+ 
