@@ -9,10 +9,8 @@ import static nuthatch.javafront.JavaPatterns.MethodDecHead;
 import static nuthatch.javafront.JavaPatterns.MethodName;
 import static nuthatch.pattern.StaticPatternFactory.ancestor;
 import static nuthatch.pattern.StaticPatternFactory.or;
-import static nuthatch.pattern.StaticPatternFactory.var;
 import static nuthatch.stratego.actions.SActionFactory.down;
 import static nuthatch.stratego.actions.SActionFactory.match;
-import static nuthatch.stratego.actions.SActionFactory.seq;
 import static nuthatch.stratego.actions.SActionFactory.walk;
 import static nuthatch.stratego.pattern.SPatternFactory._;
 import static nuthatch.stratego.pattern.SPatternFactory.var;
@@ -27,11 +25,8 @@ import nuthatch.javafront.JavaParser;
 import nuthatch.library.Action;
 import nuthatch.pattern.Environment;
 import nuthatch.pattern.EnvironmentFactory;
-import nuthatch.pattern.VarName;
-import nuthatch.stratego.actions.SAction;
 import nuthatch.stratego.actions.SMatchAction;
 import nuthatch.stratego.adapter.STermCursor;
-import nuthatch.stratego.adapter.STermVar;
 import nuthatch.stratego.adapter.SWalker;
 import nuthatch.tree.TreeCursor;
 
@@ -58,10 +53,10 @@ public class CallAnalysis {
 	public static void main(String[] args) throws SGLRException, IOException, InvalidParseTableException {
 		JavaParser.init();
 		STermCursor term = JavaParser.parseStream(Class2Table.class.getResourceAsStream("../examples/Example.java.ex"), "Example.java");
-		final MultiMap<String, String> resultMap = aspectVariant(term);
+//		final MultiMap<String, String> resultMap = aspectVariant(term);
 		final MultiMap<String, String> resultMap2 = ancestorVariant(term);
 
-		for(Entry<String, List<String>> entry : resultMap.entrySet()) {
+		for(Entry<String, List<String>> entry : resultMap2.entrySet()) {
 			System.out.printf("%25s calls: ", entry.getKey());
 			for(String s : entry.getValue()) {
 				System.out.print(s + " ");
@@ -69,7 +64,7 @@ public class CallAnalysis {
 			System.out.println();
 		}
 
-		System.out.println("aspectVariant(t).equals(ancestorVariant(t)) = " + resultMap.equals(resultMap2));
+//		System.out.println("aspectVariant(t).equals(ancestorVariant(t)) = " + resultMap.equals(resultMap2));
 	}
 
 
@@ -90,6 +85,8 @@ public class CallAnalysis {
 		return resultMap;
 	}
 
+
+/*
 
 	private static MultiMap<String, String> aspectVariant(STermCursor term) {
 		final MultiMap<String, String> resultMap = new MultiMap<String, String>();
@@ -125,7 +122,7 @@ public class CallAnalysis {
 		return resultMap;
 	}
 
-
+*/
 	private static String getSurroundingMethodName(SWalker e) {
 		Environment<TreeCursor<IStrategoTerm, Integer>> env = EnvironmentFactory.env();
 		if(ancestor(or(MethodDec(MethodDecHead(_, _, _, var("scopeName"), _, _), _), ConstrDec(ConstrDecHead(_, _, var("scopeName"), _, _), _))).match(e, env)) {
