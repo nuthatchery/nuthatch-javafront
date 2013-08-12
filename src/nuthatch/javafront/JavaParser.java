@@ -58,14 +58,32 @@ public class JavaParser {
 	}
 
 
+	public static STermCursor parseFileToAsfix(String fileName) throws SGLRException, IOException {
+		IStrategoTerm term = StrategoAdapter.parseFileToAsfix(fileName, null, getJavaParseTable());
+		return StrategoAdapter.termToTree(term);
+	}
+
+
 	public static STermCursor parseStream(InputStream input, String fileName) throws SGLRException, IOException {
 		IStrategoTerm term = StrategoAdapter.parseStream(input, fileName, null, getJavaParseTable());
 		return StrategoAdapter.termToTree(term);
 	}
 
 
+	public static STermCursor parseStreamToAsfix(InputStream input, String fileName) throws SGLRException, IOException {
+		IStrategoTerm term = StrategoAdapter.parseStreamToAsfix(input, fileName, null, getJavaParseTable());
+		return StrategoAdapter.termToTree(term);
+	}
+
+
 	public static STermCursor parseString(String input, String fileName) throws SGLRException {
 		IStrategoTerm term = StrategoAdapter.parseString(input, fileName, getJavaParseTable());
+		return StrategoAdapter.termToTree(term);
+	}
+
+
+	public static STermCursor parseStringToAsfix(String input, String fileName) throws SGLRException {
+		IStrategoTerm term = StrategoAdapter.parseStringToAsfix(input, fileName, null, getJavaParseTable());
 		return StrategoAdapter.termToTree(term);
 	}
 
