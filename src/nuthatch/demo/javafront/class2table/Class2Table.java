@@ -157,7 +157,7 @@ public class Class2Table {
 		});
 
 		// we'll do the action only on the way down the tree
-		return down(builder.done());
+		return down(builder.all());
 	}
 
 
