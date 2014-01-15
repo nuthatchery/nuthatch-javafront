@@ -13,8 +13,8 @@ public class JavaAdapter {
 
 	public static String nameToStr(TreeCursor<IStrategoTerm, Integer> tree) {
 		Environment<TreeCursor<IStrategoTerm, Integer>> env = EnvironmentFactory.env();
-		STermVar s = new STermVar(env);
-		STermVar t = new STermVar(env);
+		STermVar s = new STermVar("s");
+		STermVar t = new STermVar("t");
 		if(Id(s).match(tree, env)) {
 			return s.get().getName();
 		}
