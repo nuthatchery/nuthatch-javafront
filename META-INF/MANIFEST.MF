@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Nuthatch/J+JavaFront
 Bundle-SymbolicName: nuthatch_javafront
-Bundle-Version: 0.99.0.qualifier
+Bundle-Version: 0.99.2.qualifier
 Require-Bundle: nuthatch;bundle-version="0.99.0",
  nuthatch_stratego;bundle-version="0.99.0",
  org.spoofax.jsglr;bundle-version="0.3.0",
